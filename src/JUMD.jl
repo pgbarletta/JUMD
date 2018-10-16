@@ -9,7 +9,7 @@ Devuelve los valores únicos dentro del **v**, junto a un conteo de estos.
 
 ### Examples
 ```
-julia> veca = [ repeat(collect(0:3), 3); collect(4:5); repeat(collect(6:9), 5) ]
+julia> veca = [ repeat(collect(0:3), 3); collect(4:5); repeat(collect(6:9), 5) ];
 julia> JUMD.contar(veca)
 ([0, 1, 2, 3, 4, 5, 6, 7, 8, 9], [3, 3, 3, 3, 1, 1, 5, 5, 5, 5])
 
@@ -47,6 +47,61 @@ function contar(in_vtor::Array{T, 1}) where T
     end
 
     return key, val
+end
+
+"""
+
+JUMD.contarIndexar(v)
+
+
+Devuelve los valores únicos dentro del v, junto a un conteo de estos y
+un array con los indices donde aparece c/ valor único
+
+### Examples
+```
+julia> veca = [ repeat(collect(0:3), 3); collect(4:5); repeat(collect(6:9), 5) ];
+julia> nombre, frecu, indices = contarIndexar(veca)
+([0, 1, 2, 3, 4, 5, 6, 7, 8, 9], [3, 3, 3, 3, 1, 1, 5, 5, 5, 5],Array{Int64,1}[[1, 5, 9], [2, 6, 10], [3, 7, 11], [4, 8, 12], [13], [14], [15, 19, 23, 27, 31], [16, 20, 24, 28, 32], [17, 21, 25, 29, 33], [18, 22, 26, 30, 34]])
+
+julia> veca[indices[1]]
+3-element Array{Int64,1}:
+ 0
+ 0
+ 0
+julia> veca[indices[5]]
+1-element Array{Int64,1}:
+ 4
+```
+"""
+function contarIndexar(in_vtor::Array{T, 1}) where T
+    indices = sortperm(in_vtor)
+    in_v = in_vtor[indices]
+    n = length(in_v)
+    key = Array{T, 1}(undef, 0)
+    val = Array{Int64, 1}(undef, 0)
+
+    let st = 1
+        for k = 1:n
+            temp = in_v[st:n]
+            idx = searchsortedlast(temp, in_v[st])
+            st += idx
+
+            push!(key, temp[idx])
+            push!(val, idx)
+            st > n && break
+        end
+    end
+    
+    count = length(val)
+    ids = Array{Array{Int64, 1}, 1}(undef, count)
+    bot = 1
+    for i = 1:count
+        top = bot + val[i] - 1
+        global ids[i] = indices[bot:top]
+        bot += val[i]
+    end
+
+    return key, val, ids
 end
 
 # Agarra una matriz de PCA en Calpha de 3Nx3N-6 y devuelve una lista de 3N-6
