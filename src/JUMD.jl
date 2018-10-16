@@ -1,35 +1,78 @@
-module jutils
+module JUMD
+using FileIO, Chemfiles, DelimitedFiles, LinearAlgebra
+"""
 
-using Chemfiles
-# Agarra una matriz de PCA en Calpha de 3Nx3N-6 y devuelve
-# una lista de 3N-6 matrices, c/u de 3x3N. C/ mtx es 1 modo reordenado
-# p/ matchear las matrices de coordenadas de carbonos alfa
+JUMD.contar(v)
+
+
+Devuelve los valores únicos dentro del **v**, junto a un conteo de estos.
+
+### Examples
+```
+julia> veca = [ repeat(collect(0:3), 3); collect(4:5); repeat(collect(6:9), 5) ]
+julia> JUMD.contar(veca)
+([0, 1, 2, 3, 4, 5, 6, 7, 8, 9], [3, 3, 3, 3, 1, 1, 5, 5, 5, 5])
+
+julia> Dict(zip(JUMD.contar(veca)...))
+Dict{Int64,Int64} with 10 entries:
+  0 => 3
+  4 => 1
+  7 => 5
+  9 => 5
+  2 => 3
+  3 => 3
+  5 => 1
+  8 => 5
+  6 => 5
+  1 => 3
+```
+
+"""
+function contar(in_vtor::Array{T, 1}) where T
+    in_v = sort(in_vtor)
+    n = length(in_v)
+    key = Array{T, 1}(undef, 0)
+    val = Array{Int64, 1}(undef, 0)
+
+    let st = 1
+        for k = 1:n
+            temp = in_v[st:n]
+            idx = searchsortedlast(temp, in_v[st])
+            st += idx
+        
+            push!(key, temp[idx])
+            push!(val, idx)
+            st > n && break
+        end
+    end
+
+    return key, val
+end
+
+# Agarra una matriz de PCA en Calpha de 3Nx3N-6 y devuelve una lista de 3N-6
+# matrices, c/u de 3x3N. C/ mtx es 1 modo reordenado p/ matchear las matrices
+# de coordenadas de carbonos alfa.
 function format_pca_aa(in_mtx::Array{Float64, 2})
-    v_length = size(in_mtx)[1]
-    v_nbr = size(in_mtx)[2]
-
+    m, n = size(in_mtx)
     aa = Int64
     try
-        aa = convert(Int64, v_length / 3)
+        aa = convert(Int64, m / 3)
     catch
-        error("Vector length: ", v_length, " is not divisible by 3.")
+        error("Vector length: ", m, " is not divisible by 3.")
     end
 
-    list_out_mtx = Array{Array{Float64, 2}, 1}(v_nbr);
-    for j = 1:v_nbr
-        list_out_mtx[j] = reshape(in_mtx[:, j], 3, aa)
-    end
-
+    list_out_mtx = Array{Array{Float64, 2}, 1}(undef, n);
+    [ list_out_mtx[j] = reshape(in_mtx[:, j], 3, aa) for j = 1:n ]
+    
     return list_out_mtx
 end
 
-
-# Agarra la topología una matriz de PCA en Calpha de 3Nx3N-6 y devuelve
-# una lista de 3N-6 matrices, c/u de 3xNatomos. C/ mtx es 1 modo reordenado
-# p/ matchear las matrices de coordenadas del pdb q dió lugar a la topología.
-
+# Agarra la topología una matriz de PCA en Calpha de 3Nx3N-6 y devuelve una
+# lista de 3N-6 matrices, c/u de 3xNatomos. C/ mtx es 1 modo reordenado p/
+# matchear las matrices de coordenadas del pdb q dió lugar a la topología.
 # También devuelve un array con el nro de atomos q tiene c/ aa
-function format_pca_atom(in_top::Topology, in_mtx::Array{Float64, 2}, mask::Array{Float64, 1} = 0)
+function format_pca_atom(in_top::Topology, in_mtx::Array{Float64, 2},
+    mask::Array{Float64, 1} = 0)
     # Preparo variables
     aa = Int64
     aa_3 = Int64
@@ -40,10 +83,9 @@ function format_pca_atom(in_top::Topology, in_mtx::Array{Float64, 2}, mask::Arra
     end
     aa_3 = aa * 3
     
-    v_length = size(in_mtx)[1]
-    v_nbr = size(in_mtx)[2]
-    if v_length != aa_3
-        error("Input vector with wrong dimensions: ", v_length, "  ", (aa_3, 1))
+    m, n = size(in_mtx)
+    if m != aa_3
+        error("Input vector with wrong dimensions: ", m, "  ", (aa_3, 1))
     end
 
     # Determino orden de residuos (hay q actualizar el Julia Chemfiles)
@@ -57,9 +99,9 @@ function format_pca_atom(in_top::Topology, in_mtx::Array{Float64, 2}, mask::Arra
     natoms = sum(natom_aa)
 
     # Adapto el vector p/ darle la misma forma q la matriz de coordenadas
-    list_out_mtx = Array{Array{Float64, 2}, 1}(v_nbr);
+    list_out_mtx = Array{Array{Float64, 2}, 1}(n);
     
-    for j in 1:v_nbr
+    for j in 1:n
         vector = reshape(in_mtx[:, j], 3, aa)
         list_out_mtx[j] = Array{Float64}(3, natoms)
         cursor = 0
@@ -102,9 +144,10 @@ function tognm(vtor_anm::Array{Float64, 1})
     end
     vtor_anm =  vtor_anm.^2
     n = convert(Int64, length(vtor_anm)/3)
-    for i = 1:n
-        vtor_gnm[i] = sqrt(vtor_anm[i*3-2] + vtor_anm[i*3-1] + vtor_anm[i*3])
-    end
+    
+    [ vtor_gnm[i] = sqrt(vtor_anm[i*3-2] + vtor_anm[i*3-1] + vtor_anm[i*3])
+        for i = 1:n ]
+    
     return vtor_gnm
 end
 
@@ -116,11 +159,12 @@ function WeightedHist(in_vec, in_bins, in_weight, density = false, include_bound
     end
     
     # Prepare variables
-    out_counts = Array{Float64}(undef, length(in_bins)-1)
+    nbins = length(in_bins) - 1
+    out_counts = Array{Float64}(undef, nbins)
     
     # Get weighted histogram
     if include_bounds
-        for i=1:length(in_bins)-1
+        for i=1:nbins
             if i == 1
                 # Include those that fall before the beggining of the bins
                 temp_bool = (in_vec .>= in_bins[i]) .& (in_vec .< in_bins[i+1]) .| (in_vec .<= in_bins[i])
@@ -140,7 +184,6 @@ function WeightedHist(in_vec, in_bins, in_weight, density = false, include_bound
             out_counts[i] = sum(in_weight[temp_bool])
         end
     end
-    
     
     # Get bins middle points
     out_middle = (in_bins[1:end-1] + in_bins[2:end]) / 2
@@ -200,7 +243,7 @@ function MatHisInd2D(in_vec_x::AbstractArray, in_vec_y::AbstractArray,
     return his_ind, his
 end
 
-
+#
 function read_ptraj_modes(filename, nmodes::Int64 = 0, norma::Bool = true)
     modes_text = readdlm(filename, skipstart=0, skipblanks=true, comments=true,
         comment_char='*')
