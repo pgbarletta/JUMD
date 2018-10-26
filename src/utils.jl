@@ -244,3 +244,74 @@ function HisInd2D(in_vec_x::RealVector, in_vec_y::RealVector,
     
     return his_ind, his
 end
+
+"""
+`HisInd3D(x, y, z, bx, by, bz, include_bounds_bool)`
+
+3D histogram of `x`, `y` and `z` given `bx`, `by` and `bz`  bins, but instead
+of returning counts for each bin, it returns the indices of the elements that
+matched for that particular bin, as a matrix of arrays.
+
+If `include_bounds_bool == true` all ellements of `x`/`y`/`z` that fall beyond
+the the boundary bins, will be assigned to to the corresponding boundary bin.
+
+### Examples
+```
+TODO
+```
+"""
+function HisInd3D(in_vec_x::RealVector, in_vec_y::RealVector, in_vec_z::RealVector,
+    in_bins_x::RealVector, in_bins_y::RealVector, in_bins_z::RealVector,
+    include_bounds::Bool = false)
+    
+    cnt = length(in_vec_x)
+    if  length(in_vec_y) != cnt != length(in_vec_z)
+        error("Input vectors length don't match. X: ", in_vec_x, " Y: ", in_vec_y,
+        " Z: ", in_vec_z)
+    end
+         
+    n_x = length(in_bins_x)
+    n_y = length(in_bins_y)
+    n_z = length(in_bins_z)
+    
+    his_ind = [Int64[] for i = 1:n_x, j = 1:n_y, z = 1:n_z]
+    his = zeros(Int64, n_x, n_y, n_z)
+
+    if include_bounds
+        for i in 1:cnt
+            x = searchsortedfirst(in_bins_x, in_vec_x[i])
+            y = searchsortedfirst(in_bins_y, in_vec_y[i])
+            z = searchsortedfirst(in_bins_z, in_vec_z[i])
+            if x > n_x
+                x = n_x
+            end
+            if y > n_y
+                y = n_y
+            end
+            if z > n_z
+                z = n_z
+            end
+            push!(his_ind[x, y, z], i)
+            his[x, y, z] += 1
+        end
+    else
+        for i in 1:cnt
+            x = searchsortedfirst(in_bins_x, in_vec_x[i])
+            y = searchsortedfirst(in_bins_y, in_vec_y[i])
+            z = searchsortedfirst(in_bins_z, in_vec_z[i])
+            if x > n_x || y > n_y || z > n_z
+                continue
+            end
+            if (x == 1 && isless(x, in_vec_x[x])) || 
+                (y == 1 && isless(y, in_vec_y[y])) ||
+                (z == 1 && isless(z, in_vec_z[z]))
+                continue
+            end
+
+            push!(his_ind[x, y, z], i)
+            his[x, y, z] += 1
+        end
+    end
+    
+    return his_ind, his
+end
