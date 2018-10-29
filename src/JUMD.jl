@@ -1,5 +1,5 @@
 module JUMD
-using FileIO, DelimitedFiles, LinearAlgebra, Chemfiles
+using FileIO, DelimitedFiles, LinearAlgebra, Statistics, Chemfiles
 
 const RealVector{T<:Real} =  Array{T, 1}
 const RealMatrix{T<:Real} =  Array{T, 2}

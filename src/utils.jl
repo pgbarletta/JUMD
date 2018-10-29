@@ -315,3 +315,40 @@ function HisInd3D(in_vec_x::RealVector, in_vec_y::RealVector, in_vec_z::RealVect
     
     return his_ind, his
 end
+
+"""
+`suave(v, ws)`
+
+Will smooth input vector `v` along a window of size `ws`. Resulting vector
+will have type RealVector and length `floor(length(v) / ws)`. 
+
+### Examples
+```
+julia> v = collect(1.:1.:10)
+10-element Array{Float64,1}:
+ 1.0
+ 2.0
+ 3.0
+ 4.0
+ 5.0
+ 6.0
+ 7.0
+ 8.0
+ 9.0
+10.0
+
+julia> suave(v, 2)
+5-element Array{Float64,1}:
+ 1.5
+ 3.5
+ 5.5
+ 7.5
+ 9.5
+```
+"""
+function suave(v::RealVector, ws::Integer)
+    vs = length(v)
+    ws_ = ws - 1
+    return [ mean(v[i:i+ws_]) for i = 1:ws:length(v)-ws_ ]
+end
+        
