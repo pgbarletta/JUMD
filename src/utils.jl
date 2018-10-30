@@ -346,9 +346,53 @@ julia> suave(v, 2)
  9.5
 ```
 """
-function suave(v::RealVector, ws::Integer)
-    vs = length(v)
+function suave(v::RealVector, ws::Integer)::FloatVector
+    vs = length(v) 
     ws_ = ws - 1
     return [ mean(v[i:i+ws_]) for i = 1:ws:length(v)-ws_ ]
 end
-        
+
+"""
+distancia(trj_fn::String, a::Integer, b::Integer, nchunks::Integer = 0, nframes::Integer = 0)
+
+Read the trajectory at `trj_fn` using Chemfiles and returns a FloatVector
+with the distance between atoms `a` and `b`. If `nchunks` != 0. the trajectory
+will be divided in `nchunks` pieces to save RAM space. If `nframes` != 0, frames
+1 to `nframes` will be read and the function will run slightly faster.
+
+### Examples
+```
+NONE
+```
+"""
+function distancia(trj_fn::String, a::Integer, b::Integer, nchunks::Integer = 0,
+    nframes::Integer = 0)::FloatVector
+
+    if nframes == 0
+        in_trj = Trajectory(trj_fn)
+        nframes = convert(Int64, nsteps(in_trj))
+        close(in_trj)
+    end
+    distancias = Array{Float64, 1}(undef, nframes)
+
+    if nchunks != 1
+        st = convert(Int64, ceil(nframes / nchunks))
+        # If, by any chance, `nframes` is divisble by `st` the last 2
+        # elements will be nframes and the last iteration will be skipped.
+        chunks = [ collect(0:st:nframes) ; nframes ]
+    else
+        chunks = [0; nframes]
+    end
+
+    for j in 1:nchunks
+        in_trj = Trajectory(trj_fn)
+        for i in chunks[j]:chunks[j+1]-1
+            in_frm = read_step(in_trj, i)
+            distancias[i+1] = norm(positions(in_frm)[:, a] - positions(in_frm)[:, b])
+        end
+        close(in_trj)
+        GC.gc()
+    end
+    
+    return distancias
+end
