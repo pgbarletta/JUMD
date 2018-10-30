@@ -1,5 +1,5 @@
 """
-`format_pca_aa(mtx)`
+`formatPcaAA(mtx)`
 
 Takes a 3Nx3N-6 normal modes matrix (where N = nbr of particles) and gives a
 3N-6 array of 3x3N matrices, each corresponding to a normal mode.
@@ -9,7 +9,7 @@ Takes a 3Nx3N-6 normal modes matrix (where N = nbr of particles) and gives a
 TODO
 ```
 """
-function format_pca_aa(in_mtx::RealMatrix)
+function formatPcaAA(in_mtx::RealMatrix)
     m, n = size(in_mtx)
     aa = Int64
     try
@@ -24,7 +24,7 @@ function format_pca_aa(in_mtx::RealMatrix)
     return list_out_mtx
 end
 """
-`format_pca_atom(topology, mtx, mask)`
+`formatPcaAtom(topology, mtx, mask)`
 
 TODO
 ### Examples
@@ -32,7 +32,7 @@ TODO
 TODO
 ```
 """
-function format_pca_atom(in_top::Topology, in_mtx::Array{Float64, 2},
+function formatPcaAtom(in_top::Topology, in_mtx::Array{Float64, 2},
     mask::Array{Float64, 1} = 0)
     # Preparo variables
     aa = Int64
@@ -82,7 +82,7 @@ function format_pca_atom(in_top::Topology, in_mtx::Array{Float64, 2},
     return list_out_mtx, natom_aa
 end
 """
-`get_κ(v)`
+`getκ(v)`
 
 Calculate the collectivity of the input normal mode `v` according to Sanjeouand.
 [citation needed]
@@ -92,7 +92,7 @@ Calculate the collectivity of the input normal mode `v` according to Sanjeouand.
 TODO
 ```
 """
-function get_κ(in_vec::RealVector)
+function getκ(in_vec::RealVector)
     not_null = copy(in_vec)
     not_null[not_null .== 0] .= 0.000001
     κ = (exp.(-mapslices(x -> sum(x), mapslices(x->x.^2 .* log.(x.^2), not_null, dims = 1), dims = 1))
@@ -100,7 +100,7 @@ function get_κ(in_vec::RealVector)
     return κ
 end
 """
-`get_pnum(v)`
+`getPnum(v)`
 
 Calculate the participation number of the input mode/difference vector
 according to ... [citation needed]
@@ -117,7 +117,7 @@ function getPnum(in_vec::RealVector)
     return convert(Int64, round(sum(nor_vec .^ 4) .^ -1))
 end
 """
-`tognm(v)`
+`toGnm(v)`
 
 Turn the cartesian (XYZ) mode into a Gaussian Normal Mode-like vector. That
 is, turn xyz displacements into absolute displacements.

@@ -97,7 +97,7 @@ function contarIndexar(in_vtor::Array{T, 1}) where T
     return key, val, ids
 end
 """
-`WeightedHist(v, bins, weights, density_bool, include_bounds_bool)`
+`weightedHist(v, bins, weights, density_bool, include_bounds_bool)`
 
 Histogram of `v`, given bins `bins` but instead of counting each element in
 `v` as 1, they are counted as their corresponding weight in `weights`.
@@ -132,11 +132,11 @@ julia> bins = [1.; 2.; 3.]
    2.0
    3.0
 
-julia> JUMD.WeightedHist(v, bins, w)
+julia> JUMD.weightedHist(v, bins, w)
   ([1.5, 2.5], [0.4, 0.6])
 ```
 """
-function WeightedHist(in_vec::RealVector, in_bins::RealVector,
+function weightedHist(in_vec::RealVector, in_bins::RealVector,
     in_weight::RealVector, density::Bool = true, include_bounds::Bool = false)
     
     if length(in_vec) != length(in_weight)
@@ -184,7 +184,7 @@ function WeightedHist(in_vec::RealVector, in_bins::RealVector,
     return out_middle, out_counts
 end
 """
-`HisInd2D(x, y, bx, by, include_bounds_bool)`
+`hisInd2D(x, y, bx, by, include_bounds_bool)`
 
 2D histogram of `x` and `y` given `bx` and `by` bins, but instead of returning
 counts for each bin, it returns the indices of the elements that matched for
@@ -198,7 +198,7 @@ the boundary bins, will be assigned to to the corresponding boundary bin.
 TODO
 ```
 """
-function HisInd2D(in_vec_x::RealVector, in_vec_y::RealVector,
+function hisInd2D(in_vec_x::RealVector, in_vec_y::RealVector,
     in_bins_x::RealVector, in_bins_y::RealVector, include_bounds::Bool = false)
     
     cnt = length(in_vec_x)
@@ -246,7 +246,7 @@ function HisInd2D(in_vec_x::RealVector, in_vec_y::RealVector,
 end
 
 """
-`HisInd3D(x, y, z, bx, by, bz, include_bounds_bool)`
+`hisInd3D(x, y, z, bx, by, bz, include_bounds_bool)`
 
 3D histogram of `x`, `y` and `z` given `bx`, `by` and `bz`  bins, but instead
 of returning counts for each bin, it returns the indices of the elements that
@@ -260,7 +260,7 @@ the the boundary bins, will be assigned to to the corresponding boundary bin.
 TODO
 ```
 """
-function HisInd3D(in_vec_x::RealVector, in_vec_y::RealVector, in_vec_z::RealVector,
+function hisInd3D(in_vec_x::RealVector, in_vec_y::RealVector, in_vec_z::RealVector,
     in_bins_x::RealVector, in_bins_y::RealVector, in_bins_z::RealVector,
     include_bounds::Bool = false)
     
