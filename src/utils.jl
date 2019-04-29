@@ -396,3 +396,44 @@ function distancia(trj_fn::String, a::Integer, b::Integer, nchunks::Integer = 0,
     
     return distancias
 end
+
+"""
+`triple(v::Array{Int64, 1})`
+
+Will take vector of indices and triple them.
+
+### Examples
+```
+julia> a = collect(3:5)
+3-element Array{Int64,1}:
+ 3
+ 4
+ 5
+
+julia> JUMD.triple(a)
+9-element Array{Int64,1}:
+  7
+  8
+  9
+ 10
+ 11
+ 12
+ 13
+ 14
+ 15
+```
+"""
+function triple(v::Array{Int64, 1})::Array{Int64, 1}
+    n = length(v) 
+    v_3 = Array{Int64, 1}(undef, n * 3)
+    k = 1
+    for i = 1:n
+        v_3[k] = v[i] * 3 - 2
+        v_3[k+1] = v[i] * 3 - 1 
+        v_3[k+2] = v[i] * 3
+        k+=3
+    end
+    return v_3
+end
+
+

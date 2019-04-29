@@ -210,7 +210,33 @@ function energiaGdte(evals::RealVector, gdte::RealVector, d::Float64 = 1.)
     T = 298
     RT =  k * avgdro * T * 1E-3 * 0.239006 # Kcal/mol
     cte = 11792.08316093831
+
+    a = (RT/cte) * sum(evals.^2 .* gdte.^2)
     
-    U = d^2 * 0.5 * RT * sum(evals.^2 .* gdte.^2) / cte # Kcal/mol
+    U = (1/2) * a * d^2 # Kcal/mol
+    return U
+end
+"""
+`energiaGdteNMA(e, g, d)`
+
+
+Calculate the energy of the Volume Gradient Vector `g` given the modes
+eigenvalues `e` for a displacement of size `d`. Eigenvalues should be
+angular frequencies
+
+### Examples
+```
+TODO
+```
+"""
+function energiaGdteNMA(evals::RealVector, gdte::RealVector, d::Float64 = 1.)
+
+    if length(evals) != length(gdte)
+        error("Lengths of evals and gdte don't match. Aborting.") 
+    end
+    
+    # Declaro cte de boltzmann, avogadro, y temperatura.
+    
+    U = d^2 * 0.5 * sum(evals.^2 .* gdte.^2) 
     return U
 end
