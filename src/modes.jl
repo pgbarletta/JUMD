@@ -262,14 +262,16 @@ WONTDO
 """
 function theoretical_bf(modes::RealMatrix, evals::RealVector)::RealVector
 
-    n = size(modes)[2]    
+    m = size(modes)[1]    
+    n = size(modes)[2]
+    mm = convert(Int64, m / 3)
     if n != length(evals)
         error("Number of modes and eigenvalues don't match. Aborting.")
     end
 
-    gnm_modes = JUMD.toGnm(modes)
-    
-    [ gnm_modes[:, i] =  gnm_modes[:, i] ./ evals[i] for i = 1:n ]
+    modes_gnm = Array{Float64, 2}(undef, mm, n)
+    [ modes_gnm[i, j] = (modes[i*3-2, j]^2 + modes[i*3-1, j]^2 + modes[i*3, j]^2) / evals[j]
+        for i = 1:mm, j = 1:n ]
 
-    return mapslices(x -> sum(x), gnm_modes, dims = 2)[:, 1]
+    return mapslices(x -> sum(x), modes_gnm, dims = 2)[:, 1]
 end
