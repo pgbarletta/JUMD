@@ -249,3 +249,27 @@ function energiaGdteNMA(evals::RealVector, gdte::RealVector, d::Float64 = 1.)
     U = d^2 * 0.5 * sum(evals.^2 .* gdte.^2) 
     return U
 end
+
+"""
+`theoretical_bf(modes::RealMatrix, evals::RealVector)::RealVector`
+
+Get the theoretical Bfactors.
+
+### Examples
+```
+WONTDO
+```
+"""
+function theoretical_bf(modes::RealMatrix, evals::RealVector)::RealVector
+
+    n = size(modes)[2]    
+    if n != length(evals)
+        error("Number of modes and eigenvalues don't match. Aborting.")
+    end
+
+    gnm_modes = JUMD.toGnm(modes)
+    
+    [ gnm_modes[:, i] =  gnm_modes[:, i] ./ evals[i] for i = 1:n ]
+
+    return mapslices(x -> sum(x), gnm_modes, dims = 2)[:, 1]
+end
