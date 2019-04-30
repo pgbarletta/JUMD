@@ -27,7 +27,7 @@ function contar(in_vtor::Array{T, 1}) where T
     in_v = sort(in_vtor)
     n = length(in_v)
     key = Array{T, 1}(undef, 0)
-    val = Array{Int64, 1}(undef, 0)
+    val = IntVector(undef, 0)
 
     let st = 1
         for k = 1:n
@@ -71,7 +71,7 @@ function contarIndexar(in_vtor::Array{T, 1}) where T
     in_v = in_vtor[indices]
     n = length(in_v)
     key = Array{T, 1}(undef, 0)
-    val = Array{Int64, 1}(undef, 0)
+    val = IntVector(undef, 0)
 
     let st = 1
         for k = 1:n
@@ -86,7 +86,7 @@ function contarIndexar(in_vtor::Array{T, 1}) where T
     end
     
     count = length(val)
-    ids = Array{Array{Int64, 1}, 1}(undef, count)
+    ids = Array{IntVector, 1}(undef, count)
     bot = 1
     for i = 1:count
         top = bot + val[i] - 1
@@ -423,9 +423,9 @@ julia> JUMD.triple(a)
  15
 ```
 """
-function triple(v::Array{Int64, 1})::Array{Int64, 1}
+function triple(v::IntVector)::IntVector
     n = length(v) 
-    v_3 = Array{Int64, 1}(undef, n * 3)
+    v_3 = IntVector(undef, n * 3)
     k = 1
     for i = 1:n
         v_3[k] = v[i] * 3 - 2
@@ -435,5 +435,3 @@ function triple(v::Array{Int64, 1})::Array{Int64, 1}
     end
     return v_3
 end
-
-
