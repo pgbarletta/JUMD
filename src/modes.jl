@@ -117,18 +117,22 @@ function getPnum(in_vec::RealVector)
     return convert(Int64, round(sum(nor_vec .^ 4) .^ -1))
 end
 """
-`toGnm(v)`
+`toGnm(vtr_anm)`
 
 Turn the cartesian (XYZ) mode into a Gaussian Normal Mode-like vector. That
 is, turn xyz displacements into absolute displacements.
+
+`toGnm(mtx_anm)`
+
+Run toGnm() in each column vector of the input matrix.
 
 ### Examples
 ```
 TODO
 ```
 """
-function toGnm(vtor_anm::RealVector)
-    m = length(vtor_anm)
+function toGnm(vtr_anm::RealVector)
+    m = length(vtr_anm)
     n = Int64
     try
         n = convert(Int64, m/3)
@@ -136,13 +140,18 @@ function toGnm(vtor_anm::RealVector)
         error("Input vector's length is not divisible by 3.")
     end
     
-    vtor_gnm = Array{Float64, 1}(undef, n);
+    vtr_gnm = Array{Float64, 1}(undef, n);
         
-    [ vtor_gnm[i] = sqrt(vtor_anm[i*3-2]^2 + vtor_anm[i*3-1]^2 + vtor_anm[i*3]^2)
+    [ vtr_gnm[i] = sqrt(vtr_anm[i*3-2]^2 + vtr_anm[i*3-1]^2 + vtr_anm[i*3]^2)
         for i = 1:n ]
     
-    return vtor_gnm
+    return vtr_gnm
 end
+
+function toGnm(mtx_anm::RealMatrix)::RealMatrix
+    return mapslices(x -> JUMD.toGnm(x), mtx_anm, dims = 1)
+end
+
 """
 `readPtrajModes(f, n, normalize_bool)`
 
