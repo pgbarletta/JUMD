@@ -18,7 +18,7 @@ function formatPcaAA(in_mtx::RealMatrix)
         error("Vector length: ", m, " is not divisible by 3.")
     end
 
-    list_out_mtx = Array{Array{T, 2}, 1}(undef, n);
+    list_out_mtx = Array{Array{T,2},1}(undef, n);
     [ list_out_mtx[j] = reshape(in_mtx[:, j], 3, aa) for j = 1:n ]
     
     return list_out_mtx
@@ -32,8 +32,8 @@ TODO
 TODO
 ```
 """
-function formatPcaAtom(in_top::Topology, in_mtx::Array{Float64, 2},
-    mask::Array{Float64, 1} = 0)
+function formatPcaAtom(in_top::Topology, in_mtx::Array{Float64,2},
+    mask::Array{Float64,1} = 0)
     # Preparo variables
     aa = Int64
     aa_3 = Int64
@@ -52,7 +52,7 @@ function formatPcaAtom(in_top::Topology, in_mtx::Array{Float64, 2},
     # Determino orden de residuos (hay q actualizar el Julia Chemfiles)
     tmp = Array{Int64}(undef, aa)
     ids = Array{Int64}(undef, aa)
-    [ ids[i+1] = convert(Int64, id((Residue(in_top, i)))) for i = 0:aa-1 ]
+    [ ids[i + 1] = convert(Int64, id((Residue(in_top, i)))) for i = 0:aa - 1 ]
     idx = sortperm(ids)
     # Determino el nro de atomos de c/ aminoácido. Resto 1 pq Chemfiles tiene 0-indexing
     [ tmp[i] = size(Residue(in_top, mask[i] - 1)) for i = 1:aa ]
@@ -60,7 +60,7 @@ function formatPcaAtom(in_top::Topology, in_mtx::Array{Float64, 2},
     natoms = sum(natom_aa)
 
     # Adapto el vector p/ darle la misma forma q la matriz de coordenadas
-    list_out_mtx = Array{Array{Float64, 2}, 1}(n);
+    list_out_mtx = Array{Array{Float64,2},1}(n);
     
     for j in 1:n
         vector = reshape(in_mtx[:, j], 3, aa)
@@ -73,7 +73,7 @@ function formatPcaAtom(in_top::Topology, in_mtx::Array{Float64, 2},
                 cursor = natom_aa[i]
                 continue
             end
-            rango = collect(cursor+1:cursor + natom_aa[i])
+            rango = collect(cursor + 1:cursor + natom_aa[i])
             list_out_mtx[j][:, rango] = repmat(vector[:, i], 1, natom_aa[i])
             cursor += natom_aa[i]
         end
@@ -95,7 +95,7 @@ TODO
 function getκ(in_vec::RealVector)
     not_null = copy(in_vec)
     not_null[not_null .== 0] .= 0.000001
-    κ = (exp.(-mapslices(x -> sum(x), mapslices(x->x.^2 .* log.(x.^2), not_null, dims = 1), dims = 1))
+    κ = (exp.(-mapslices(x->sum(x), mapslices(x->x.^2 .* log.(x.^2), not_null, dims = 1), dims = 1))
         / length(not_null))[1]
     return κ
 end
@@ -110,11 +110,10 @@ according to ... [citation needed]
 ```
 TODO
 ```
-
 """
 function getPnum(in_vec::RealVector)
     nor_vec = in_vec ./ norm(in_vec) 
-    return convert(Int64, round(sum(nor_vec .^ 4) .^ -1))
+    return convert(Int64, round(sum(nor_vec.^4).^-1))
 end
 """
 `toGnm(vtr_anm)`
@@ -135,21 +134,21 @@ function toGnm(vtr_anm::RealVector)
     m = length(vtr_anm)
     n = Int64
     try
-        n = convert(Int64, m/3)
+        n = convert(Int64, m / 3)
     catch e
         error("Input vector's length is not divisible by 3.")
     end
     
-    vtr_gnm = Array{Float64, 1}(undef, n);
+    vtr_gnm = Array{Float64,1}(undef, n);
         
-    [ vtr_gnm[i] = sqrt(vtr_anm[i*3-2]^2 + vtr_anm[i*3-1]^2 + vtr_anm[i*3]^2)
+    [ vtr_gnm[i] = sqrt(vtr_anm[i * 3 - 2]^2 + vtr_anm[i * 3 - 1]^2 + vtr_anm[i * 3]^2)
         for i = 1:n ]
     
     return vtr_gnm
 end
 
 function toGnm(mtx_anm::RealMatrix)::RealMatrix
-    return mapslices(x -> JUMD.toGnm(x), mtx_anm, dims = 1)
+    return mapslices(x->JUMD.toGnm(x), mtx_anm, dims = 1)
 end
 
 """
@@ -166,34 +165,61 @@ TODO
 """
 function readPtrajModes(filename::AbstractString, nmodes::Int64 = 0,
     norma::Bool = true)
-    modes_text = readdlm(filename, skipstart=0, skipblanks=true, comments=true,
-        comment_char='*')
+    modes_text = readdlm(filename, skipstart = 0, skipblanks = true, comments = true,
+        comment_char = '*')
 
     if nmodes == 0
         nmodes = convert(Int64, modes_text[1, 5])
     end
     ncoords = convert(Int64, modes_text[2, 1])
 
-    lines = ceil(Int64, ncoords/7)
+    lines = ceil(Int64, ncoords / 7)
     fields_per_line = lines * 7
-    evalue = Array{Float64, 1}(undef, nmodes)
-    mode = Array{Float64, 2}(undef, ncoords, nmodes)
+    evalue = Array{Float64,1}(undef, nmodes)
+    mode = Array{Float64,2}(undef, ncoords, nmodes)
     
     j = lines + 1 + 2 # 1 p/ q lea la prox linea 2 por el header
-    for i=1:nmodes
+    for i = 1:nmodes
         evalue[i] = modes_text[j, 2]
-        temp = permutedims(modes_text[(j+1):(lines+j), :], [2, 1])
+        temp = permutedims(modes_text[(j + 1):(lines + j), :], [2, 1])
         temp2 = reshape(temp, fields_per_line)
-        [ pop!(temp2) for k = ncoords+1:fields_per_line ]
-        mode[:, i] = convert(Array{Float64, 1}, temp2)
+        [ pop!(temp2) for k = ncoords + 1:fields_per_line ]
+        mode[:, i] = convert(Array{Float64,1}, temp2)
         j = j + lines + 1
     end
 
     if norma
-        [ mode[: ,i] = mode[:, i] ./ norm(mode[:, i]) for i=1:nmodes ]
+        [ mode[: ,i] = mode[:, i] ./ norm(mode[:, i]) for i = 1:nmodes ]
     end
 
      return mode, evalue
+end
+"""
+`barletta_index(e, g)`
+
+
+Calculate the energy of the Volume Gradient Vector `g` given the modes
+eigenvalues `e`.
+
+### Examples
+```
+TODO
+```
+"""
+function barletta_index(evals::Array{Float64,1}, gdte::Array{Float64,1})
+
+    if length(evals) != length(gdte)
+        error("Lengths of evals and gdte don't match. Aborting.") 
+    end
+    
+    # Declaro cte de boltzmann, avogadro, y temperatura.
+    k = 1.38064852e-23
+    avgdro = 6.0221409e+23
+    T = 298
+    RT =  k * avgdro * T * 1E-3 * 0.239006 # Kcal/mol
+    cte = 11792.08316093831
+
+    return (RT / cte) * sum(evals.^2 .* gdte.^2)
 end
 """
 `energiaGdte(e, g, d)`
@@ -220,9 +246,9 @@ function energiaGdte(evals::RealVector, gdte::RealVector, d::Float64 = 1.)
     RT =  k * avgdro * T * 1E-3 * 0.239006 # Kcal/mol
     cte = 11792.08316093831
 
-    a = (RT/cte) * sum(evals.^2 .* gdte.^2)
+    a = (RT / cte) * sum(evals.^2 .* gdte.^2)
     
-    U = (1/2) * a * d^2 # Kcal/mol
+    U = (1 / 2) * a * d^2 # Kcal/mol
     return U
 end
 """
@@ -269,9 +295,9 @@ function theoretical_bf(modes::RealMatrix, evals::RealVector)::RealVector
         error("Number of modes and eigenvalues don't match. Aborting.")
     end
 
-    modes_gnm = Array{Float64, 2}(undef, mm, n)
-    [ modes_gnm[i, j] = (modes[i*3-2, j]^2 + modes[i*3-1, j]^2 + modes[i*3, j]^2) / evals[j]
+    modes_gnm = Array{Float64,2}(undef, mm, n)
+    [ modes_gnm[i, j] = (modes[i * 3 - 2, j]^2 + modes[i * 3 - 1, j]^2 + modes[i * 3, j]^2) / evals[j]
         for i = 1:mm, j = 1:n ]
 
-    return mapslices(x -> sum(x), modes_gnm, dims = 2)[:, 1]
+    return mapslices(x->sum(x), modes_gnm, dims = 2)[:, 1]
 end
