@@ -301,3 +301,28 @@ function theoretical_bf(modes::RealMatrix, evals::RealVector)::RealVector
 
     return mapslices(x->sum(x), modes_gnm, dims = 2)[:, 1]
 end
+"""
+`bfteo(modes::Array{Float64, 2}, freqs::Array{Float64, 1})`
+
+Calculate the theoretical B-factors given the `modes` and the eigenvalues `e`.
+
+### Examples
+```
+TODO
+```
+"""
+function bfteo(modes::Array{Float64,2}, freqs::Array{Float64,1})
+
+    n = length(freqs)
+    if size(modes)[2] != n
+        error("Number of frequencies and modes don't match. Aborting.") 
+    end
+        
+    gnm_m = JUMD.toGnm(modes).^2
+    mtx = Array{Float64,2}(undef, size(gnm_m))
+    for i in 1:n
+    mtx[:, i] = gnm_m[:, i] ./ freqs[i]  
+    end
+
+    return mapslices(x->sum(x), mtx, dims = 2)[:, 1]
+end
