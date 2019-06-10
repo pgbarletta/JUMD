@@ -219,7 +219,7 @@ function barletta_index(evals::Array{Float64,1}, gdte::Array{Float64,1})
     RT =  k * avgdro * T * 1E-3 * 0.239006 # Kcal/mol
     cte = 11792.08316093831
 
-    return (RT / cte) * sum(evals.^2 .* gdte.^2)
+    return 1 / ((RT / cte) * sum(evals.^2 .* gdte.^2))
 end
 """
 `energiaGdte(e, g, d)`
