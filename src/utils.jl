@@ -23,10 +23,10 @@ Dict{Int64,Int64} with 10 entries:
   1 => 3
 ```
 """
-function contar(in_vtor::Array{T, 1}) where T
+function contar(in_vtor::Array{T,1}) where T
     in_v = sort(in_vtor)
     n = length(in_v)
-    key = Array{T, 1}(undef, 0)
+    key = Array{T,1}(undef, 0)
     val = IntVector(undef, 0)
 
     let st = 1
@@ -66,11 +66,11 @@ julia> veca[indices[5]]
  4
 ```
 """
-function contarIndexar(in_vtor::Array{T, 1}) where T
+function contarIndexar(in_vtor::Array{T,1}) where T
     indices = sortperm(in_vtor)
     in_v = in_vtor[indices]
     n = length(in_v)
-    key = Array{T, 1}(undef, 0)
+    key = Array{T,1}(undef, 0)
     val = IntVector(undef, 0)
 
     let st = 1
@@ -86,7 +86,7 @@ function contarIndexar(in_vtor::Array{T, 1}) where T
     end
     
     count = length(val)
-    ids = Array{IntVector, 1}(undef, count)
+    ids = Array{IntVector,1}(undef, count)
     bot = 1
     for i = 1:count
         top = bot + val[i] - 1
@@ -145,36 +145,36 @@ function weightedHist(in_vec::RealVector, in_bins::RealVector,
     end
     
     nbins = length(in_bins) - 1
-    out_counts = Array{Float64, 1}(undef, nbins)
+    out_counts = Array{Float64,1}(undef, nbins)
     
     # Get weighted histogram
     if include_bounds
-        for i=1:nbins
+        for i = 1:nbins
             if i == 1
                 # Include those that fall before the beggining of the bins
                 temp_bool = (in_vec .>= in_bins[i]) .& 
-                    (in_vec .< in_bins[i+1]) .| (in_vec .<= in_bins[i])
+                    (in_vec .< in_bins[i + 1]) .| (in_vec .<= in_bins[i])
                 out_counts[i] = sum(in_weight[temp_bool])
             elseif i == nbins
                 # Include those that fall after the end of the bins
                 temp_bool = (in_vec .>= in_bins[i]) .&
-                    (in_vec .< in_bins[i+1]) .| (in_vec .>= in_bins[end])
+                    (in_vec .< in_bins[i + 1]) .| (in_vec .>= in_bins[end])
                 out_counts[i] = sum(in_weight[temp_bool])
             else
                 temp_bool = (in_vec .>= in_bins[i]) .&
-                    (in_vec .< in_bins[i+1])
+                    (in_vec .< in_bins[i + 1])
                 out_counts[i] = sum(in_weight[temp_bool])
             end
         end
     else
-        for i=1:nbins
-            temp_bool = (in_vec .>= in_bins[i]) .& (in_vec .< in_bins[i+1])
+        for i = 1:nbins
+            temp_bool = (in_vec .>= in_bins[i]) .& (in_vec .< in_bins[i + 1])
             out_counts[i] = sum(in_weight[temp_bool])
         end
     end
     
     # Get bins middle points.
-    out_middle = (in_bins[1:end-1] + in_bins[2:end]) ./ 2
+    out_middle = (in_bins[1:end - 1] + in_bins[2:end]) ./ 2
     
     # Turn counts into density, if required.
     if (density)
@@ -209,7 +209,7 @@ function hisInd2D(in_vec_x::RealVector, in_vec_y::RealVector,
     n_x = length(in_bins_x)
     n_y = length(in_bins_y)
     
-    his_ind = [Int64[] for i=1:n_x, j=1:n_y]
+    his_ind = [Int64[] for i = 1:n_x, j = 1:n_y]
     his = zeros(Int64, n_x, n_y)
     if include_bounds
         for i in 1:cnt
@@ -349,7 +349,7 @@ julia> suave(v, 2)
 function suave(v::RealVector, ws::Integer)::FloatVector
     vs = length(v) 
     ws_ = ws - 1
-    return [ mean(v[i:i+ws_]) for i = 1:ws:length(v)-ws_ ]
+    return [ mean(v[i:i + ws_]) for i = 1:ws:length(v) - ws_ ]
 end
 
 """
@@ -373,7 +373,7 @@ function distancia(trj_fn::String, a::Integer, b::Integer, nchunks::Integer = 0,
         nframes = convert(Int64, nsteps(in_trj))
         close(in_trj)
     end
-    distancias = Array{Float64, 1}(undef, nframes)
+    distancias = Array{Float64,1}(undef, nframes)
 
     if nchunks != 1
         st = convert(Int64, ceil(nframes / nchunks))
@@ -386,9 +386,9 @@ function distancia(trj_fn::String, a::Integer, b::Integer, nchunks::Integer = 0,
 
     for j in 1:nchunks
         in_trj = Trajectory(trj_fn)
-        for i in chunks[j]:chunks[j+1]-1
+        for i in chunks[j]:chunks[j + 1] - 1
             in_frm = read_step(in_trj, i)
-            distancias[i+1] = norm(positions(in_frm)[:, a] - positions(in_frm)[:, b])
+            distancias[i + 1] = norm(positions(in_frm)[:, a] - positions(in_frm)[:, b])
         end
         close(in_trj)
         GC.gc()
@@ -429,9 +429,53 @@ function triple(v::IntVector)::IntVector
     k = 1
     for i = 1:n
         v_3[k] = v[i] * 3 - 2
-        v_3[k+1] = v[i] * 3 - 1 
-        v_3[k+2] = v[i] * 3
-        k+=3
+        v_3[k + 1] = v[i] * 3 - 1 
+        v_3[k + 2] = v[i] * 3
+        k += 3
     end
     return v_3
+end
+
+"""
+`bfexp(in_fn::String, only_CA::Bool = true)`
+
+Will take PDB filename and return experimental B factors on columns 61-66.
+
+### Examples
+```
+julia> bfexp(string("1A8J", ".pdb"))
+430-element Array{Float64,1}:
+ 0.55
+ 1.27
+ ⋮   
+ 0.65
+ 0.3 
+```
+"""
+function bfexp(in_fn::String, only_CA::Bool = true)
+    bf = Array{Float64,1}()
+    
+    open(in_fn) do file
+        for ln in eachline(file)
+            if (only_CA)
+                if ln[1:4] == "ATOM" && strip(ln[13:16]) == "CA"
+                    try
+                        push!(bf, parse(Float64, ln[61:66]))
+                    catch e
+                        push!(bf, 0.)
+                    end
+                end
+            else
+                if ln[1:4] == "ATOM"
+                    try
+                        push!(bf, parse(Float64, ln[61:66]))
+                    catch e
+                        push!(bf, 0.)
+                    end
+                end
+            end
+        end
+    end
+                
+    return bf
 end
