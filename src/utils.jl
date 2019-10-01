@@ -458,7 +458,7 @@ function bfexp(in_fn::String, only_CA::Bool = true)
     open(in_fn) do file
         for ln in eachline(file)
             if (only_CA)
-                if ln[1:4] == "ATOM" && strip(ln[13:16]) == "CA"
+                if ln[1:3] == "ATO" && strip(ln[13:16]) == "CA"
                     try
                         push!(bf, parse(Float64, ln[61:66]))
                     catch e
@@ -466,7 +466,7 @@ function bfexp(in_fn::String, only_CA::Bool = true)
                     end
                 end
             else
-                if ln[1:4] == "ATOM"
+                if ln[1:3] == "ATO"
                     try
                         push!(bf, parse(Float64, ln[61:66]))
                     catch e
