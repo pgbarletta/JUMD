@@ -45,7 +45,7 @@ end
 
 # Calculo matriz de covarianza y luego la diagonalizo. Finalmente, descarto
 # desplazamiento y rotación
-covar = [ cor(xyz[:, i], xyz[:, j]) for i in 1:aa3, j in 1:aa3  ]
+covar = [ cov(xyz[:, i], xyz[:, j]) for i in 1:aa3, j in 1:aa3  ]
 evals, evecs = eigen(covar);
 evals = evals[7:end]
 evecs = evecs[:, 7:end];
