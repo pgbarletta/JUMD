@@ -1,0 +1,11 @@
+name = "JUMD"
+uuid = "919719f1-7535-48fb-b040-98f266e98d58"
+authors = ["pbarletta "]
+version = "0.1.0"
+
+[deps]
+Chemfiles = "46823bd8-5fb3-5f92-9aa0-96921f3dd015"
+DelimitedFiles = "8bb1440f-4735-579b-a4ab-409b98df4dab"
+FileIO = "5789e2e9-d7fb-5bc7-8068-2c6fae9b9549"
+LinearAlgebra = "37e2e46d-f89d-539d-b4ee-838fcccc9c8e"
+Statistics = "10745b16-79ce-11e8-11f9-7d13ad32a3b2"
